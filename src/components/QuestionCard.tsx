@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Question } from '../types';
+import { generateHint } from '../utils/hintGenerator';
 
 interface QuestionCardProps {
   question: Question;
@@ -14,7 +15,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onAnswer,
   disabled,
 }) => {
+  const [showHint, setShowHint] = useState(false);
   const answered = question.selectedAnswer !== null;
+
+  // Reset hint when question changes
+  React.useEffect(() => {
+    setShowHint(false);
+  }, [questionIndex]);
 
   const getOptionClass = (option: number): string => {
     const classes = ['option-btn'];
@@ -26,7 +33,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           question.isCorrect ? 'option-btn--correct' : 'option-btn--incorrect'
         );
       }
-      // Always highlight the correct answer in green (so the child learns)
       if (option === question.correctAnswer) {
         classes.push('option-btn--correct');
       }
@@ -35,11 +41,30 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     return classes.join(' ');
   };
 
+  const hint = generateHint(question);
+
   return (
     <div className="question-card">
       <div className="question-expression">
         {question.expression} = ❓
       </div>
+
+      {!answered && (
+        <button
+          className={`hint-btn ${showHint ? 'hint-btn--active' : ''}`}
+          onClick={() => setShowHint((prev) => !prev)}
+          type="button"
+        >
+          {showHint ? '🙈 הסתר רמז' : '💡 רמז'}
+        </button>
+      )}
+
+      {showHint && !answered && (
+        <div className="hint-bubble animate-bounce-in">
+          <span className="hint-bubble-text">{hint}</span>
+        </div>
+      )}
+
       <div className="options-grid">
         {question.options.map((option) => (
           <button

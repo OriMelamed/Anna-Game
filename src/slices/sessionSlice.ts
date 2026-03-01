@@ -71,12 +71,6 @@ const sessionSlice = createSlice({
         question.isCorrect = false;
         question.answeredLate = true;
       }
-      if (state.currentQuestionIndex < state.questions.length - 1) {
-        state.currentQuestionIndex += 1;
-      } else {
-        state.currentScreen = 'summary';
-        state.isActive = false;
-      }
     },
   },
 });

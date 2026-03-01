@@ -6,6 +6,8 @@ import QuestionCard from '../components/QuestionCard';
 const CORRECT_MESSAGES = ['🎉 מעולה!', '🌟 נכון!', '👏 יופי!', '💪 כל הכבוד!', '🎊 מדהים!', '🌈 בול!'];
 const INCORRECT_MESSAGES = ['🤔 לא נורא, נסה שוב בפעם הבאה!', '💪 ממשיכים!', '🎯 בפעם הבאה!', '😊 קרוב!', '🌟 לומדים מטעויות!'];
 
+const HARD_AUTO_ADVANCE_DELAY = 1500; // ms to show feedback before auto-advancing
+
 const PracticeScreen: React.FC = () => {
   const dispatch = useAppDispatch();
   const questions = useAppSelector((state) => state.session.questions);
@@ -21,21 +23,39 @@ const PracticeScreen: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(effectiveDuration);
   const [timerExpired, setTimerExpired] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const handledTimeoutRef = useRef<number>(-1); // tracks which question index we already handled timeout for
+  const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
   const answered = currentQuestion?.selectedAnswer !== null;
+  const hardTimedOut = difficulty === 'hard' && timerExpired && currentQuestion?.answeredLate === true;
+
+  // Cleanup auto-advance timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceRef.current) {
+        clearTimeout(autoAdvanceRef.current);
+        autoAdvanceRef.current = null;
+      }
+    };
+  }, []);
 
   // Reset timer when question changes
   useEffect(() => {
     setTimeLeft(effectiveDuration);
     setTimerExpired(false);
+    // Clear any pending auto-advance from previous question
+    if (autoAdvanceRef.current) {
+      clearTimeout(autoAdvanceRef.current);
+      autoAdvanceRef.current = null;
+    }
   }, [currentQuestionIndex, effectiveDuration]);
 
   // Timer countdown logic
   useEffect(() => {
-    if (difficulty === 'easy' || answered || timerExpired) {
+    if (difficulty === 'easy' || answered || timerExpired || hardTimedOut) {
       return;
     }
 
@@ -56,16 +76,25 @@ const PracticeScreen: React.FC = () => {
         intervalRef.current = null;
       }
     };
-  }, [difficulty, answered, timerExpired, currentQuestionIndex]);
+  }, [difficulty, answered, timerExpired, hardTimedOut, currentQuestionIndex]);
 
   // Handle timer reaching 0
   useEffect(() => {
     if (timeLeft === 0 && !timerExpired && difficulty !== 'easy') {
+      // Guard against double-dispatch for the same question
+      if (handledTimeoutRef.current === currentQuestionIndex) return;
+      handledTimeoutRef.current = currentQuestionIndex;
+
       setTimerExpired(true);
       if (difficulty === 'medium') {
         dispatch(markAnsweredLate({ questionIndex: currentQuestionIndex }));
       } else if (difficulty === 'hard') {
         dispatch(timeExpired({ questionIndex: currentQuestionIndex }));
+        // Auto-advance after a brief delay so the kid sees feedback
+        autoAdvanceRef.current = setTimeout(() => {
+          dispatch(nextQuestion());
+          autoAdvanceRef.current = null;
+        }, HARD_AUTO_ADVANCE_DELAY);
       }
     }
   }, [timeLeft, timerExpired, difficulty, currentQuestionIndex, dispatch]);
@@ -76,7 +105,9 @@ const PracticeScreen: React.FC = () => {
         ? '⏰ נכון, אבל אחרי הזמן!'
         : CORRECT_MESSAGES[currentQuestionIndex % CORRECT_MESSAGES.length]
       : INCORRECT_MESSAGES[currentQuestionIndex % INCORRECT_MESSAGES.length]
-    : null;
+    : hardTimedOut
+      ? '⏰ הזמן נגמר!'
+      : null;
 
   const handleAnswer = useCallback(
     (questionIndex: number, selectedAnswer: number) => {
@@ -130,7 +161,7 @@ const PracticeScreen: React.FC = () => {
         question={currentQuestion}
         questionIndex={currentQuestionIndex}
         onAnswer={handleAnswer}
-        disabled={answered}
+        disabled={answered || hardTimedOut}
       />
 
       {encourageMessage && (
@@ -139,7 +170,7 @@ const PracticeScreen: React.FC = () => {
         </div>
       )}
 
-      {answered && (
+      {answered && !hardTimedOut && (
         <button className="practice-next-btn" onClick={handleNext}>
           {isLastQuestion ? '🏁 סיום' : 'הבא ➡️'}
         </button>
