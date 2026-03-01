@@ -93,6 +93,39 @@ function evaluateLeftToRight(operands: number[], operators: OperationType[]): nu
   return result;
 }
 
+/**
+ * Check whether the add/subtract chain (after resolving ×/÷) ever dips
+ * below zero at any intermediate step.  Returns true if any running total
+ * goes negative — meaning the expression should be rejected.
+ */
+function hasNegativeIntermediate(operands: number[], operators: OperationType[]): boolean {
+  // Phase 1: resolve × and ÷ left to right (same as evaluateExpression)
+  const vals = [...operands];
+  const ops = [...operators];
+
+  let i = 0;
+  while (i < ops.length) {
+    if (ops[i] === 'multiplication' || ops[i] === 'division') {
+      const res = ops[i] === 'multiplication'
+        ? vals[i] * vals[i + 1]
+        : vals[i] / vals[i + 1];
+      vals.splice(i, 2, res);
+      ops.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
+
+  // Phase 2: walk the +/− chain and check each intermediate result
+  let running = vals[0];
+  for (let j = 0; j < ops.length; j++) {
+    running = ops[j] === 'addition' ? running + vals[j + 1] : running - vals[j + 1];
+    if (running < 0) return true;
+  }
+
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // 3b. String-Based Expression Evaluator (supports parentheses)
 // ---------------------------------------------------------------------------
@@ -306,11 +339,12 @@ function generateMixedQuestion(
     // Step 5: Evaluate
     const result = evaluateExpression(operands, operators);
 
-    // Validate: positive integer within range
+    // Validate: positive integer within range, no negative intermediates
     if (
       Number.isInteger(result) &&
       result > 0 &&
-      result <= maxResult
+      result <= maxResult &&
+      !hasNegativeIntermediate(operands, operators)
     ) {
       const expression = buildExpressionString(operands, operators);
       const distractors = generateDistractors(operands, operators, result, random);
@@ -504,14 +538,14 @@ function generateParenthesizedQuestion(
     }
     if (!valid) continue;
 
-    // Step 4b: Check paren group sub-expressions are positive integers
+    // Step 4b: Check paren group sub-expressions are positive integers with no negative intermediates
     const groupResults = new Map<string, number>();
     let groupsValid = true;
     for (const group of template.parenGroups) {
       const groupOps = operators.slice(group.start, group.end);
       const groupVals = operands.slice(group.start, group.end + 1);
       const groupResult = evaluateExpression(groupVals, groupOps);
-      if (!Number.isInteger(groupResult) || groupResult < 1) {
+      if (!Number.isInteger(groupResult) || groupResult < 1 || hasNegativeIntermediate(groupVals, groupOps)) {
         groupsValid = false;
         break;
       }
@@ -580,6 +614,39 @@ function generateParenthesizedQuestion(
 
     // Step 7: Validation
     if (!Number.isInteger(parenResult) || parenResult < 1 || parenResult > maxResult) continue;
+
+    // Step 7b: Check no negative intermediates in outer add/subtract chain
+    {
+      // Build outer expression: collapse each paren group to its evaluated result
+      const outerVals: number[] = [];
+      const outerOps: OperationType[] = [];
+      const consumed = new Set<number>();
+
+      for (const group of template.parenGroups) {
+        for (let gi = group.start; gi <= group.end; gi++) {
+          consumed.add(gi);
+        }
+      }
+
+      for (let oi = 0; oi < operandCount; oi++) {
+        const group = template.parenGroups.find(g => g.start === oi);
+        if (group) {
+          outerVals.push(groupResults.get(`${group.start}-${group.end}`)!);
+          oi = group.end; // skip to end of group (loop will oi++)
+        } else if (!consumed.has(oi)) {
+          outerVals.push(operands[oi]);
+        }
+      }
+
+      // Collect outer operators (those not inside any paren group)
+      for (let oi = 0; oi < operators.length; oi++) {
+        if (!insideGroup.has(oi)) {
+          outerOps.push(operators[oi]);
+        }
+      }
+
+      if (outerVals.length > 1 && hasNegativeIntermediate(outerVals, outerOps)) continue;
+    }
 
     // Re-check all paren group sub-expressions are still positive integers
     let finalGroupsValid = true;
