@@ -49,6 +49,148 @@
   animation: wiggle 3s ease-in-out infinite 1.5s;
 }
 
+/* ===== Wizard — Step Label ===== */
+.wizard-step-label {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Wizard — Step Indicator Dots ===== */
+.wizard-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.wizard-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-border, #d1d5db);
+  transition: all 0.3s var(--transition-smooth);
+}
+
+.wizard-dot--active {
+  background: var(--color-primary);
+  transform: scale(1.35);
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.45);
+}
+
+/* ===== Wizard — Card Container & Slide Animations ===== */
+.wizard-card-container {
+  animation-duration: 0.35s;
+  animation-fill-mode: both;
+  animation-timing-function: ease-out;
+}
+
+.wizard-slide-next {
+  animation-name: slideInFromLeft;
+}
+
+.wizard-slide-back {
+  animation-name: slideInFromRight;
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== Wizard — Navigation Buttons ===== */
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.wizard-btn {
+  padding: 0.85rem 1.6rem;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 48px;
+  transition:
+    transform 0.2s var(--transition-bounce),
+    box-shadow 0.2s var(--transition-smooth);
+}
+
+.wizard-btn--next {
+  flex: 1;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #fff;
+  box-shadow:
+    0 4px 0 rgba(124, 58, 237, 0.25),
+    0 6px 16px rgba(124, 58, 237, 0.2);
+}
+
+.wizard-btn--next:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 0 rgba(124, 58, 237, 0.2),
+    0 10px 24px rgba(124, 58, 237, 0.3);
+}
+
+.wizard-btn--next:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 rgba(124, 58, 237, 0.25);
+}
+
+.wizard-btn--back {
+  background: transparent;
+  border: 2.5px solid var(--color-border, #d1d5db);
+  color: var(--color-text-secondary, #6b7280);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.06);
+}
+
+.wizard-btn--back:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 rgba(124, 58, 237, 0.12);
+}
+
+.wizard-btn--back:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Start button inside wizard-nav should flex */
+.wizard-nav .settings-start-btn {
+  flex: 1;
+  margin-top: 0;
+}
+
 .settings-title {
   font-size: 2.4rem;
   text-align: center;
@@ -313,6 +455,234 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+/* ===== Settings — Card Components ===== */
+.settings-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.03), rgba(236, 72, 153, 0.02));
+  border: 1.5px solid rgba(124, 58, 237, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.1rem 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.settings-card--intro {
+  border-right: 4px solid #6c5ce7;
+}
+
+.settings-card--operations {
+  border-right: 4px solid #00b894;
+}
+
+.settings-card--numbers {
+  border-right: 4px solid #fdcb6e;
+}
+
+.settings-card--difficulty {
+  border-right: 4px solid #e17055;
+}
+
+.settings-card-header {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(124, 58, 237, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.settings-card-hint {
+  font-size: 0.85rem;
+  color: #636e72;
+  margin-top: -8px;
+  margin-bottom: 12px;
+}
+
+/* ===== Numbers Card — Redesigned ===== */
+.numbers-section {
+  margin-bottom: 1.25rem;
+}
+
+.numbers-section-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.65rem;
+  color: #2d3436;
+  letter-spacing: 0.01em;
+}
+
+.numbers-range-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+}
+
+.numbers-range-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.7rem 0.4rem;
+  border-radius: 16px;
+  border: 2.5px solid rgba(253, 203, 110, 0.35);
+  background: rgba(253, 203, 110, 0.06);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.numbers-range-card:hover {
+  border-color: rgba(253, 203, 110, 0.7);
+  background: rgba(253, 203, 110, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(253, 203, 110, 0.2);
+}
+
+.numbers-range-card--selected {
+  border-color: #f9a825;
+  background: linear-gradient(135deg, #fff9e6, #fff3cd);
+  box-shadow: 0 4px 14px rgba(249, 168, 37, 0.3);
+  transform: scale(1.05);
+}
+
+.numbers-range-card--selected:hover {
+  transform: scale(1.05) translateY(-2px);
+}
+
+.numbers-range-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.numbers-range-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #2d3436;
+}
+
+.numbers-range-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #636e72;
+}
+
+.numbers-pills {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.numbers-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  border: 2.5px solid rgba(253, 203, 110, 0.35);
+  background: rgba(253, 203, 110, 0.06);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.numbers-pill:hover {
+  border-color: rgba(253, 203, 110, 0.7);
+  background: rgba(253, 203, 110, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(253, 203, 110, 0.18);
+}
+
+.numbers-pill--selected {
+  border-color: #f9a825;
+  background: linear-gradient(135deg, #fff9e6, #fff3cd);
+  box-shadow: 0 3px 12px rgba(249, 168, 37, 0.28);
+  transform: scale(1.06);
+}
+
+.numbers-pill--selected:hover {
+  transform: scale(1.06) translateY(-1px);
+}
+
+.numbers-pill-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #2d3436;
+}
+
+.numbers-pill-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #636e72;
+}
+
+.numbers-paren-section {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px dashed rgba(253, 203, 110, 0.25);
+}
+
+.numbers-paren-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.numbers-paren-header .numbers-section-label {
+  margin-bottom: 0;
+}
+
+.numbers-paren-example {
+  background: rgba(253, 203, 110, 0.1);
+  border: 1.5px dashed rgba(253, 203, 110, 0.4);
+  border-radius: 12px;
+  padding: 0.5rem 0.85rem;
+  display: inline-block;
+  margin-bottom: 0.35rem;
+}
+
+.numbers-paren-example-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #b7791f;
+  font-family: 'Courier New', monospace;
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
+
+.numbers-paren-note {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  color: #e17055;
+  font-weight: 600;
+}
+
+/* Numbers card responsive */
+@media (max-width: 480px) {
+  .numbers-range-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .numbers-range-emoji {
+    font-size: 1.3rem;
+  }
+
+  .numbers-range-value {
+    font-size: 1rem;
+  }
+
+  .numbers-pills {
+    gap: 0.4rem;
+  }
+
+  .numbers-pill {
+    padding: 0.4rem 0.75rem;
+  }
 }
 
 /* ===== Settings — Operations Grid ===== */
@@ -1318,6 +1688,10 @@
   }
 
   .settings-section {
+    padding: 1rem 0.85rem 0.5rem;
+  }
+
+  .settings-card {
     padding: 1rem 0.85rem 0.5rem;
   }
 }
